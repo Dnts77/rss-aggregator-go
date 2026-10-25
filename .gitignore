@@ -1,3 +1,4 @@
 rss-aggregator-go.exe
 .env
 rss-aggregator-go.exe~
+internal/

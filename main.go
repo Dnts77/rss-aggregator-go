@@ -1,15 +1,22 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/Dnts77/rss-aggregator-go/internal/database"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
+
+type apiConfig struct {
+	DB *database.Queries
+}
 
 func main() {
 
@@ -20,6 +27,21 @@ func main() {
 	if portString == "" {
 		log.Fatal("PORT is not found in the environment") //	Logging the error
 	}
+
+	dbURL := os.Getenv("DB_URL")
+	if dbURL == "" {
+		log.Fatal("DB_URL is not found in the environment") //	Logging the error
+	}
+
+	conn, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal("Can't connect to database:", err)
+	}
+
+	apiCfg := apiConfig{
+		DB: database.New(conn),
+	}
+
 	router := chi.NewRouter() //	New Router object
 
 	router.Use(cors.Handler(cors.Options{
@@ -36,8 +58,9 @@ func main() {
 	}))
 
 	v1Router := chi.NewRouter()
-	v1Router.Get("/healthz", handlerReadiness) //	Connecting the "handlerReadiness" function to the "/healthz" path - Only for GET requests
-	v1Router.Get("/error", handlerErr)         //	Handling errors with the "handleErr" function
+	v1Router.Get("/healthz", handlerReadiness)        //	Connecting the "handlerReadiness" function to the "/healthz" path - Only for GET requests
+	v1Router.Get("/error", handlerErr)                //	Handling errors with the "handleErr" function
+	v1Router.Post("/users", apiCfg.handlerCreateUser) //	Creating users' route
 
 	router.Mount("/v1", v1Router) //	Nestint the "v1Router" in the "/v1" path. So the full path to this request will be "/v1/healthz"
 
@@ -47,9 +70,9 @@ func main() {
 	}
 
 	log.Printf("Server starting on PORT: %v", portString)
-	err := srv.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
+	err2 := srv.ListenAndServe()
+	if err2 != nil {
+		log.Fatal(err2)
 	}
 
 	fmt.Println("PORT: ", portString)
