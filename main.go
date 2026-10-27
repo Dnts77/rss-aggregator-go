@@ -58,9 +58,12 @@ func main() {
 	}))
 
 	v1Router := chi.NewRouter()
-	v1Router.Get("/healthz", handlerReadiness)        //	Connecting the "handlerReadiness" function to the "/healthz" path - Only for GET requests
-	v1Router.Get("/error", handlerErr)                //	Handling errors with the "handleErr" function
-	v1Router.Post("/users", apiCfg.handlerCreateUser) //	Creating users' route
+	v1Router.Get("/healthz", handlerReadiness)                               //	Connecting the "handlerReadiness" function to the "/healthz" path - Only for GET requests
+	v1Router.Get("/error", handlerErr)                                       //	Handling errors with the "handleErr" function
+	v1Router.Post("/users", apiCfg.handlerCreateUser)                        //	Creating users' route
+	v1Router.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerGetUser))     //	Getting the user by their API key. Works through a middleware to dry up the code
+	v1Router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed)) //	Creating a feeds' route by the middleware and the handlerCreateFeed method
+	v1Router.Get("/feeds", apiCfg.handlerGetFeeds)
 
 	router.Mount("/v1", v1Router) //	Nestint the "v1Router" in the "/v1" path. So the full path to this request will be "/v1/healthz"
 
@@ -70,9 +73,9 @@ func main() {
 	}
 
 	log.Printf("Server starting on PORT: %v", portString)
-	err2 := srv.ListenAndServe()
-	if err2 != nil {
-		log.Fatal(err2)
+	err = srv.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	fmt.Println("PORT: ", portString)
