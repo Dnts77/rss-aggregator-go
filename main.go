@@ -58,12 +58,15 @@ func main() {
 	}))
 
 	v1Router := chi.NewRouter()
-	v1Router.Get("/healthz", handlerReadiness)                               //	Connecting the "handlerReadiness" function to the "/healthz" path - Only for GET requests
-	v1Router.Get("/error", handlerErr)                                       //	Handling errors with the "handleErr" function
-	v1Router.Post("/users", apiCfg.handlerCreateUser)                        //	Creating users' route
-	v1Router.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerGetUser))     //	Getting the user by their API key. Works through a middleware to dry up the code
-	v1Router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed)) //	Creating a feeds' route by the middleware and the handlerCreateFeed method
-	v1Router.Get("/feeds", apiCfg.handlerGetFeeds)
+	v1Router.Get("/healthz", handlerReadiness)                                                             //	Connecting the "handlerReadiness" function to the "/healthz" path - Only for GET requests
+	v1Router.Get("/error", handlerErr)                                                                     //	Handling errors with the "handleErr" function
+	v1Router.Post("/users", apiCfg.handlerCreateUser)                                                      //	Creating users
+	v1Router.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerGetUser))                                   //	Getting the user by their API key. Works through a middleware to dry up the code
+	v1Router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed))                               //	Creating a feeds' route by the middleware and the handlerCreateFeed method
+	v1Router.Get("/feeds", apiCfg.handlerGetFeeds)                                                         //	Gets all feeds
+	v1Router.Post("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))                  //	Sends a new feed follow through the authentication middleware
+	v1Router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollow))                      //	Getting the followed feeds
+	v1Router.Delete("/feed_follows/{feedFollowID}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow)) //	Deleting a followed feed
 
 	router.Mount("/v1", v1Router) //	Nestint the "v1Router" in the "/v1" path. So the full path to this request will be "/v1/healthz"
 
