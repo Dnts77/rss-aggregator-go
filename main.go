@@ -71,6 +71,7 @@ func main() {
 	v1Router.Post("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))                  //	Sends a new feed follow through the authentication middleware
 	v1Router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollow))                      //	Getting the followed feeds
 	v1Router.Delete("/feed_follows/{feedFollowID}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow)) //	Deleting a followed feed
+	v1Router.Get("/posts", apiCfg.middlewareAuth(apiCfg.handlerGetPostsForUser))                           //	Gets posts for user
 
 	router.Mount("/v1", v1Router) //	Nestint the "v1Router" in the "/v1" path. So the full path to this request will be "/v1/healthz"
 
